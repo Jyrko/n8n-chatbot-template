@@ -464,9 +464,9 @@
             sessionId: currentSessionId,
             route: config.webhook.route,
             chatInput: message,
-            chatHistory: chatHistory,
             metadata: {
-                userId: ""
+                userId: "",
+                chatHistory: chatHistory
             }
         };
 
