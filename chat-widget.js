@@ -395,6 +395,28 @@
         return crypto.randomUUID();
     }
 
+    function getChatHistory() {
+        const chatHistory = sessionStorage.getItem(currentSessionId);
+        if (!chatHistory) return null;
+
+        try {
+            const parsedHistory = JSON.parse(chatHistory);
+            return parsedHistory;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function setChatHistory(newValue) {
+        if (!currentSessionId) {
+            console.error("Error: no currentSessionId exists");
+            return null;
+        }
+        
+        const stringifiedHistory = JSON.stringify(newValue);
+        sessionStorage.setItem(currentSessionId, stringifiedHistory);
+    }
+
     async function startNewConversation() {
         currentSessionId = generateUUID();
         const data = [{
@@ -405,6 +427,8 @@
                 userId: ""
             }
         }];
+
+        sessionStorage.setItem(currentSessionId, JSON.stringify([]));
 
         try {
             const response = await fetch(config.webhook.url, {
@@ -431,11 +455,16 @@
     }
 
     async function sendMessage(message) {
+        const chatHistory = getChatHistory();
+        console.log(chatHistory)
+        chatHistory.push({ role: "user", content: message })
+
         const messageData = {
             action: "sendMessage",
             sessionId: currentSessionId,
             route: config.webhook.route,
             chatInput: message,
+            chatHistory: chatHistory,
             metadata: {
                 userId: ""
             }
@@ -457,15 +486,19 @@
             });
             
             const data = await response.json();
+            const dataTextified = Array.isArray(data) ? data[0].output : data.output;
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = Array.isArray(data) ? data[0].output : data.output;
+            botMessageDiv.textContent = dataTextified;
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            chatHistory.push({ role: "assistant", content: dataTextified })
         } catch (error) {
             console.error('Error:', error);
         }
+
+        setChatHistory(chatHistory);
     }
 
     newChatBtn.addEventListener('click', startNewConversation);
