@@ -491,11 +491,12 @@
             });
             
             const data = await response.json();
+
             const dataTextified = Array.isArray(data) ? data[0].output : data.output;
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = dataTextified;
+            botMessageDiv.innerHTML = dataTextified;
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             chatHistory.push({ role: "assistant", content: dataTextified })
