@@ -404,6 +404,7 @@
         if (!chatHistory) return null;
 
         try {
+            const parsedHistory = JSON.parse(chatHistory);
             return parsedHistory;
 
         } catch (error) {
@@ -503,10 +504,11 @@
         }
 
         if (chatHistory.length > config.chat.historyLimit) {
-            return parsedHistory.slice(parsedHistory.length - config.chat.historyLimit - 1);
+            setChatHistory(chatHistory.slice(chatHistory.length - config.chat.historyLimit));
+        } else {
+            setChatHistory(chatHistory);
         }
 
-        setChatHistory(chatHistory);
     }
 
     newChatBtn.addEventListener('click', startNewConversation);
