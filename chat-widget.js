@@ -290,6 +290,9 @@
             url: '',
             route: ''
         },
+        chat: {
+            historyLimit: 10
+        },
         branding: {
             logo: '',
             name: '',
@@ -297,7 +300,7 @@
             responseTimeText: '',
             poweredBy: {
                 text: 'Powered by n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                link: 'https://n8n.io/'
             }
         },
         style: {
@@ -314,6 +317,7 @@
         {
             webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
             branding: { ...defaultConfig.branding, ...window.ChatWidgetConfig.branding },
+            chat: { ...defaultConfig.chat, ...window.ChatWidgetConfig.chat },
             style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style }
         } : defaultConfig;
 
@@ -400,8 +404,8 @@
         if (!chatHistory) return null;
 
         try {
-            const parsedHistory = JSON.parse(chatHistory);
             return parsedHistory;
+
         } catch (error) {
             console.error('Error:', error);
         }
@@ -456,7 +460,7 @@
 
     async function sendMessage(message) {
         const chatHistory = getChatHistory();
-        console.log(chatHistory)
+
         chatHistory.push({ role: "user", content: message })
 
         const messageData = {
@@ -496,6 +500,10 @@
             chatHistory.push({ role: "assistant", content: dataTextified })
         } catch (error) {
             console.error('Error:', error);
+        }
+
+        if (chatHistory.length > config.chat.historyLimit) {
+            return parsedHistory.slice(parsedHistory.length - config.chat.historyLimit - 1);
         }
 
         setChatHistory(chatHistory);
