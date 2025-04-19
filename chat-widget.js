@@ -290,6 +290,9 @@
             url: '',
             route: ''
         },
+        chat: {
+            historyLimit: 10
+        },
         branding: {
             logo: '',
             name: '',
@@ -297,7 +300,7 @@
             responseTimeText: '',
             poweredBy: {
                 text: 'Powered by n8n',
-                link: 'https://n8n.partnerlinks.io/m8a94i19zhqq?utm_source=nocodecreative.io'
+                link: 'https://n8n.io/'
             }
         },
         style: {
@@ -314,6 +317,7 @@
         {
             webhook: { ...defaultConfig.webhook, ...window.ChatWidgetConfig.webhook },
             branding: { ...defaultConfig.branding, ...window.ChatWidgetConfig.branding },
+            chat: { ...defaultConfig.chat, ...window.ChatWidgetConfig.chat },
             style: { ...defaultConfig.style, ...window.ChatWidgetConfig.style }
         } : defaultConfig;
 
@@ -402,6 +406,7 @@
         try {
             const parsedHistory = JSON.parse(chatHistory);
             return parsedHistory;
+
         } catch (error) {
             console.error('Error:', error);
         }
@@ -456,7 +461,7 @@
 
     async function sendMessage(message) {
         const chatHistory = getChatHistory();
-        console.log(chatHistory)
+
         chatHistory.push({ role: "user", content: message })
 
         const messageData = {
@@ -486,11 +491,12 @@
             });
             
             const data = await response.json();
+
             const dataTextified = Array.isArray(data) ? data[0].output : data.output;
             
             const botMessageDiv = document.createElement('div');
             botMessageDiv.className = 'chat-message bot';
-            botMessageDiv.textContent = dataTextified;
+            botMessageDiv.innerHTML = dataTextified;
             messagesContainer.appendChild(botMessageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
             chatHistory.push({ role: "assistant", content: dataTextified })
@@ -498,7 +504,12 @@
             console.error('Error:', error);
         }
 
-        setChatHistory(chatHistory);
+        if (chatHistory.length > config.chat.historyLimit) {
+            setChatHistory(chatHistory.slice(chatHistory.length - config.chat.historyLimit));
+        } else {
+            setChatHistory(chatHistory);
+        }
+
     }
 
     newChatBtn.addEventListener('click', startNewConversation);
